@@ -1,0 +1,9 @@
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\public.spec.js:21:3 › public WebRTC swarm (opt-in) › downloads Sintel poster and subtitles from WebRTC peers only (21.2s)
+  ok 2 [chrome] › tests\e2e\public.spec.js:21:3 › public WebRTC swarm (opt-in) › downloads Sintel poster and subtitles from WebRTC peers only (16.2s)
+  ok 3 [msedge] › tests\e2e\public.spec.js:21:3 › public WebRTC swarm (opt-in) › downloads Sintel poster and subtitles from WebRTC peers only (17.6s)
+  ok 4 [firefox] › tests\e2e\public.spec.js:21:3 › public WebRTC swarm (opt-in) › downloads Sintel poster and subtitles from WebRTC peers only (21.4s)
+
+  4 passed (1.4m)

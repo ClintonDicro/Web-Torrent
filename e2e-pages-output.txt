@@ -1,0 +1,13 @@
+
+Running 8 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\app.spec.js:22:3 › Browser torrent downloader › loads under the production CSP with security headers and no errors (6.3s)
+  ok 2 [chromium] › tests\e2e\app.spec.js:38:3 › Browser torrent downloader › magnet link: preview, file selection, live progress, completion and save (10.1s)
+  ok 3 [chromium] › tests\e2e\app.spec.js:107:3 › Browser torrent downloader › pause stops progress and resume completes the download (11.3s)
+  ok 4 [chromium] › tests\e2e\app.spec.js:167:3 › Browser torrent downloader › untrusted names are shown as text, never as HTML (6.8s)
+  ok 5 [firefox] › tests\e2e\app.spec.js:22:3 › Browser torrent downloader › loads under the production CSP with security headers and no errors (4.4s)
+  ok 6 [firefox] › tests\e2e\app.spec.js:38:3 › Browser torrent downloader › magnet link: preview, file selection, live progress, completion and save (13.0s)
+  ok 7 [firefox] › tests\e2e\app.spec.js:107:3 › Browser torrent downloader › pause stops progress and resume completes the download (15.5s)
+  ok 8 [firefox] › tests\e2e\app.spec.js:167:3 › Browser torrent downloader › untrusted names are shown as text, never as HTML (4.4s)
+
+  8 passed (1.3m)

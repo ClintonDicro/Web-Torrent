@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en" class="h-full dark" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Download torrents in your browser with WebTorrent. No server, no uploads: everything runs on your device.">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark light">
+  <title>Browser Torrent Downloader</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body class="h-full overflow-hidden">
+<div id="app" class="flex h-full">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-60 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform dark:border-ink-800 dark:bg-ink-900 md:static md:translate-x-0">
+    <div class="flex items-center gap-2.5 px-5 py-5">
+      <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-lg shadow-sky-500/20">
+        <i data-icon="ArrowDownToLine" class="lg"></i>
+      </div>
+      <div>
+        <div class="text-sm font-semibold leading-tight text-slate-900 dark:text-white">Torrent Downloader</div>
+        <div class="text-[11px] text-slate-500">in your browser · WebTorrent</div>
+      </div>
+    </div>
+    <nav class="flex-1 space-y-0.5 px-3" aria-label="Main">
+      <button class="nav-item" data-view="dashboard" aria-current="page"><i data-icon="LayoutDashboard"></i>Dashboard</button>
+      <button class="nav-item" data-view="active"><i data-icon="Activity"></i><span class="flex-1 text-left">Active Downloads</span><span id="nav-active" class="text-xs tabular-nums text-slate-400"></span></button>
+      <button class="nav-item" data-view="completed"><i data-icon="CircleCheck"></i><span class="flex-1 text-left">Completed</span><span id="nav-completed" class="text-xs tabular-nums text-slate-400"></span></button>
+      <button class="nav-item" data-view="history"><i data-icon="History"></i>Download History</button>
+      <button class="nav-item" data-view="settings"><i data-icon="Settings"></i>Settings</button>
+      <button class="nav-item" data-view="logs"><i data-icon="ScrollText"></i>Activity Log</button>
+      <button class="nav-item" data-view="about"><i data-icon="Info"></i>How it works &amp; limits</button>
+    </nav>
+    <div class="m-3 rounded-xl border border-slate-200 p-3 text-xs dark:border-ink-700">
+      <div class="mb-1.5 flex items-center justify-between text-slate-500"><span>Browser storage free</span><span id="storage-free" class="tabular-nums">–</span></div>
+      <div class="flex items-center justify-between text-slate-500"><span>This session</span><span id="session-usage" class="tabular-nums">–</span></div>
+    </div>
+  </aside>
+  <div id="sidebar-backdrop" class="fixed inset-0 z-30 bg-black/40 md:hidden" hidden></div>
+
+  <!-- Main column -->
+  <div class="flex min-w-0 flex-1 flex-col">
+    <header class="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur dark:border-ink-800 dark:bg-ink-900/60 md:gap-3 md:px-6">
+      <button id="menu-btn" class="icon-btn md:hidden" aria-label="Open menu"><i data-icon="Menu"></i></button>
+      <h1 id="view-title" class="mr-auto text-lg font-semibold text-slate-900 dark:text-white">Dashboard</h1>
+      <div class="hidden items-center gap-2 lg:flex" aria-label="Summary">
+        <span class="chip" title="Active downloads"><i data-icon="Activity" class="text-sky-500"></i><span id="top-active">0</span> active</span>
+        <span class="chip" title="Completed downloads"><i data-icon="CircleCheck" class="text-emerald-500"></i><span id="top-completed">0</span> done</span>
+        <span class="chip" title="Download speed"><i data-icon="ArrowDown" class="text-sky-500"></i><span id="top-down">0 B/s</span></span>
+        <span class="chip" title="Upload speed"><i data-icon="ArrowUp" class="text-violet-500"></i><span id="top-up">0 B/s</span></span>
+      </div>
+      <button id="pause-all" class="btn-ghost" title="Pause all"><i data-icon="CirclePause"></i><span class="hidden sm:inline">Pause all</span></button>
+      <button id="resume-all" class="btn-ghost" title="Resume all"><i data-icon="CirclePlay"></i><span class="hidden sm:inline">Resume all</span></button>
+      <button id="theme-btn" class="icon-btn" aria-label="Toggle theme"><i data-icon="SunMoon"></i></button>
+      <button id="add-btn" class="btn-primary" disabled><i data-icon="Plus"></i>Add Torrent</button>
+    </header>
+
+    <!-- Banners -->
+    <div id="banners" class="space-y-2 px-4 pt-3 md:px-6 empty:hidden">
+      <div id="banner-offline" class="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-200" role="alert" hidden>
+        <i data-icon="WifiOff" class="mt-0.5"></i><span>You are offline. Downloads pause until the connection returns.</span>
+      </div>
+      <div id="banner-unsupported" class="flex items-start gap-2 rounded-lg border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-700 dark:text-rose-200" role="alert" hidden>
+        <i data-icon="CircleAlert" class="mt-0.5"></i><span id="banner-unsupported-text"></span>
+      </div>
+      <div id="banner-notice" class="flex items-start gap-3 rounded-lg border border-sky-500/30 bg-sky-500/5 p-3 text-sm" hidden>
+        <i data-icon="Info" class="mt-0.5 text-sky-500"></i>
+        <div class="flex-1 space-y-1 text-slate-600 dark:text-slate-300">
+          <p><strong class="text-slate-900 dark:text-white">Runs entirely in your browser.</strong> It can only connect to peers that support WebRTC (browser and WebTorrent-enabled clients), not to ordinary BitTorrent clients. Many torrents therefore have no reachable peers.</p>
+          <p>Peers and trackers can see your IP address. Keep this tab open: downloads stop when you close or reload it. Download only content you are allowed to.</p>
+        </div>
+        <button id="banner-notice-close" class="icon-btn" aria-label="Dismiss notice"><i data-icon="X"></i></button>
+      </div>
+    </div>
+
+    <main class="flex-1 overflow-y-auto px-4 py-5 md:px-6" id="main">
+      <section id="view-list">
+        <div id="dash-tiles" class="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div class="card p-4"><div class="stat-k">Downloading</div><div class="mt-1 text-2xl font-semibold tabular-nums" id="tile-active">0</div></div>
+          <div class="card p-4"><div class="stat-k">Queued</div><div class="mt-1 text-2xl font-semibold tabular-nums" id="tile-queued">0</div></div>
+          <div class="card p-4"><div class="stat-k">Completed</div><div class="mt-1 text-2xl font-semibold tabular-nums" id="tile-completed">0</div></div>
+          <div class="card p-4"><div class="stat-k">Speed ↓ / ↑</div><div class="mt-1 text-lg font-semibold tabular-nums" id="tile-speed">0 B/s / 0 B/s</div></div>
+        </div>
+        <div id="torrent-list" class="space-y-3" aria-live="polite"></div>
+        <div id="empty-state" class="card flex flex-col items-center justify-center gap-3 px-6 py-16 text-center" hidden>
+          <i data-icon="Inbox" class="xl text-slate-400"></i>
+          <div class="text-base font-medium" id="empty-title">No downloads yet</div>
+          <p class="max-w-sm text-sm text-slate-500" id="empty-text">Add a .torrent file or a magnet link. You can also drop a .torrent file anywhere on this window.</p>
+          <button class="btn-primary mt-2" data-action="open-add"><i data-icon="Plus"></i>Add Torrent</button>
+        </div>
+      </section>
+
+      <section id="view-history" hidden>
+        <div class="mb-3 flex items-center justify-between gap-2">
+          <p class="text-sm text-slate-500">Stored only in this browser. Turn it off in Settings.</p>
+          <button class="btn-outline" id="history-clear"><i data-icon="Trash2"></i>Clear history</button>
+        </div>
+        <div class="card overflow-x-auto">
+          <table class="w-full min-w-[560px] text-sm">
+            <thead class="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-ink-700">
+              <tr><th class="px-4 py-3">Name</th><th class="px-4 py-3">Size</th><th class="px-4 py-3">Added</th><th class="px-4 py-3">Completed</th><th class="px-4 py-3">Outcome</th></tr>
+            </thead>
+            <tbody id="history-body" class="divide-y divide-slate-100 dark:divide-ink-800"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="view-settings" hidden>
+        <form id="settings-form" class="mx-auto max-w-3xl space-y-5" novalidate>
+          <div class="card grid gap-5 p-5 sm:grid-cols-2">
+            <h2 class="flex items-center gap-2 font-semibold sm:col-span-2"><i data-icon="Gauge"></i>Limits for this session</h2>
+            <div><label class="label" for="s-maxActive">Max simultaneous downloads</label><input class="input" type="number" min="1" max="5" id="s-maxActive" name="maxActive"><p class="field-error mt-1 text-xs text-rose-500" data-for="maxActive"></p></div>
+            <div><label class="label" for="s-maxTorrentsPerSession">Max torrents per session</label><input class="input" type="number" min="1" max="100" id="s-maxTorrentsPerSession" name="maxTorrentsPerSession"><p class="field-error mt-1 text-xs text-rose-500" data-for="maxTorrentsPerSession"></p></div>
+            <div><label class="label" for="s-maxTorrentGB">Max size per torrent (GB)</label><input class="input" type="number" min="1" max="100" id="s-maxTorrentGB" name="maxTorrentGB"><p class="field-error mt-1 text-xs text-rose-500" data-for="maxTorrentGB"></p></div>
+            <div><label class="label" for="s-sessionLimitGB">Max total per session (GB)</label><input class="input" type="number" min="1" max="500" id="s-sessionLimitGB" name="sessionLimitGB"><p class="field-error mt-1 text-xs text-rose-500" data-for="sessionLimitGB"></p></div>
+            <div><label class="label" for="s-downloadLimitKBps">Download limit (KB/s, 0 = unlimited)</label><input class="input" type="number" min="0" id="s-downloadLimitKBps" name="downloadLimitKBps"><p class="field-error mt-1 text-xs text-rose-500" data-for="downloadLimitKBps"></p></div>
+            <div><label class="label" for="s-uploadLimitKBps">Upload limit (KB/s, 0 = unlimited)</label><input class="input" type="number" min="0" id="s-uploadLimitKBps" name="uploadLimitKBps"><p class="field-error mt-1 text-xs text-rose-500" data-for="uploadLimitKBps"></p></div>
+            <div><label class="label" for="s-stallSeconds">Mark as stalled after (seconds)</label><input class="input" type="number" min="10" max="3600" id="s-stallSeconds" name="stallSeconds"><p class="field-error mt-1 text-xs text-rose-500" data-for="stallSeconds"></p></div>
+            <div><label class="label" for="s-autoCleanupMinutes">Free storage of saved downloads after (min, 0 = never)</label><input class="input" type="number" min="0" max="1440" id="s-autoCleanupMinutes" name="autoCleanupMinutes"><p class="field-error mt-1 text-xs text-rose-500" data-for="autoCleanupMinutes"></p></div>
+          </div>
+          <div class="card space-y-4 p-5">
+            <h2 class="flex items-center gap-2 font-semibold"><i data-icon="Radio"></i>Peers &amp; trackers</h2>
+            <div>
+              <label class="label" for="s-trackers">Extra WebSocket trackers (one per line, wss:// only)</label>
+              <textarea class="input min-h-[96px] font-mono text-xs" id="s-trackers" name="trackers" spellcheck="false"></textarea>
+              <p class="field-error mt-1 text-xs text-rose-500" data-for="trackers"></p>
+            </div>
+            <label class="flex items-start gap-3 text-sm"><input type="checkbox" class="mt-0.5 h-4 w-4 accent-sky-600" name="useDefaultTrackers" id="s-useDefaultTrackers"><span><span class="font-medium">Add the public WebTorrent trackers</span><br><span class="text-xs text-slate-500">tracker.webtorrent.dev, tracker.openwebtorrent.com, tracker.btorrent.xyz (not added to private torrents).</span></span></label>
+            <label class="flex items-start gap-3 text-sm"><input type="checkbox" class="mt-0.5 h-4 w-4 accent-sky-600" name="allowWebSeeds" id="s-allowWebSeeds"><span><span class="font-medium">Use HTTPS web seeds</span><br><span class="text-xs text-slate-500">Downloads from https:// servers listed in the torrent (only works if they allow cross-origin requests).</span></span></label>
+            <label class="flex items-start gap-3 text-sm"><input type="checkbox" class="mt-0.5 h-4 w-4 accent-sky-600" name="seedAfterComplete" id="s-seedAfterComplete"><span><span class="font-medium">Seed after completion</span><br><span class="text-xs text-slate-500">Off: stops sharing as soon as a download finishes.</span></span></label>
+          </div>
+          <div class="card grid gap-4 p-5 sm:grid-cols-2">
+            <h2 class="flex items-center gap-2 font-semibold sm:col-span-2"><i data-icon="SlidersHorizontal"></i>Interface</h2>
+            <label class="flex items-start gap-3 text-sm"><input type="checkbox" class="mt-0.5 h-4 w-4 accent-sky-600" name="notifications" id="s-notifications"><span><span class="font-medium">Notifications</span><br><span class="text-xs text-slate-500">Desktop notification when a download completes.</span></span></label>
+            <label class="flex items-start gap-3 text-sm"><input type="checkbox" class="mt-0.5 h-4 w-4 accent-sky-600" name="keepHistory" id="s-keepHistory"><span><span class="font-medium">Keep download history</span><br><span class="text-xs text-slate-500">Names and sizes, stored only in this browser.</span></span></label>
+            <div><label class="label" for="s-theme">Theme</label><select class="input" id="s-theme" name="theme"><option value="dark">Dark</option><option value="light">Light</option><option value="system">System</option></select></div>
+          </div>
+          <div class="flex items-center justify-end gap-3">
+            <span id="settings-status" class="text-sm text-slate-500" role="status"></span>
+            <button type="button" class="btn-ghost" id="settings-reset">Reset to defaults</button>
+            <button type="submit" class="btn-primary" id="settings-save"><i data-icon="Save"></i>Save settings</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="view-logs" hidden>
+        <div class="mb-3 flex items-center gap-2">
+          <button class="btn-outline" id="logs-clear"><i data-icon="Eraser"></i>Clear</button>
+          <span class="text-sm text-slate-500">This session only. Nothing is sent anywhere.</span>
+        </div>
+        <pre id="logs-pre" class="card max-h-[70vh] overflow-auto whitespace-pre-wrap break-all p-4 font-mono text-xs leading-relaxed text-slate-600 dark:text-slate-300"></pre>
+      </section>
+
+      <section id="view-about" hidden>
+        <article class="card mx-auto max-w-3xl space-y-4 p-6 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <h2 class="text-base font-semibold text-slate-900 dark:text-white">How this works</h2>
+          <p>Everything runs in this browser tab using <strong>WebTorrent</strong>. There is no server: torrent files, magnet links and downloaded data never leave your device except as normal BitTorrent traffic to peers.</p>
+          <h3 class="font-semibold text-slate-900 dark:text-white">Which peers can I reach?</h3>
+          <p>Browsers cannot open raw TCP or UDP connections, so they <strong>cannot talk to ordinary BitTorrent clients</strong> (qBittorrent, Transmission, uTorrent… over TCP/uTP) and cannot use UDP/HTTP trackers or the DHT. They connect only to <strong>WebRTC peers</strong>: other WebTorrent browser tabs and desktop clients with WebTorrent support (e.g. WebTorrent Desktop, and some builds of other clients), found through <strong>WebSocket (wss://) trackers</strong>. Torrents that nobody shares over WebRTC will stay at “Finding peers”.</p>
+          <h3 class="font-semibold text-slate-900 dark:text-white">Privacy</h3>
+          <p>WebRTC peers and the trackers you use <strong>see your IP address</strong>, just like with any BitTorrent client. A VPN that covers WebRTC traffic hides it; some browsers or extensions limit WebRTC, which may also stop torrents from working.</p>
+          <h3 class="font-semibold text-slate-900 dark:text-white">Keep the tab open</h3>
+          <p>Downloads only run while this tab is open. Closing or reloading it stops everything, and unfinished data is discarded the next time you open the app. Mobile browsers and battery savers may pause background tabs, which also pauses downloads.</p>
+          <h3 class="font-semibold text-slate-900 dark:text-white">Where files go</h3>
+          <ul class="list-disc space-y-1 pl-5">
+            <li><strong>Browser storage</strong> (all browsers): data is kept in this site's private browser storage until you press <em>Save</em>. Saving streams the file to your device without loading it all into memory (in private windows of some browsers, files above 512 MB cannot be saved).</li>
+            <li><strong>Folder on this device</strong> (Chrome and Edge on desktop): files are written straight into a folder you choose, inside a sub-folder named after the torrent. Nothing in that folder is ever deleted by this app.</li>
+          </ul>
+          <h3 class="font-semibold text-slate-900 dark:text-white">Not supported in a browser</h3>
+          <ul class="list-disc space-y-1 pl-5">
+            <li>TCP/uTP peers, UDP/HTTP trackers, DHT, PEX with desktop clients, port forwarding.</li>
+            <li>Resuming after closing the tab, and downloading in the background.</li>
+            <li>BitTorrent v2-only torrents.</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+
+    <footer class="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-slate-200 bg-white px-4 py-2 text-xs text-slate-500 dark:border-ink-800 dark:bg-ink-900 md:px-6">
+      <span class="flex items-center gap-1.5" title="Overall download speed"><i data-icon="ArrowDown" class="text-sky-500"></i><span id="bar-down" class="tabular-nums">0 B/s</span></span>
+      <span class="flex items-center gap-1.5" title="Overall upload speed"><i data-icon="ArrowUp" class="text-violet-500"></i><span id="bar-up" class="tabular-nums">0 B/s</span></span>
+      <span class="flex items-center gap-1.5" title="Transferred this session"><i data-icon="ArrowDownUp"></i><span id="bar-total" class="tabular-nums">0 B ↓ / 0 B ↑</span></span>
+      <span class="ml-auto flex items-center gap-1.5" id="bar-conn"><span class="h-2 w-2 rounded-full bg-slate-400" id="conn-dot"></span><span id="conn-text">Starting…</span></span>
+    </footer>
+  </div>
+</div>
+
+<!-- Details drawer -->
+<div id="drawer-backdrop" class="fixed inset-0 z-40 bg-black/40" hidden></div>
+<aside id="drawer" class="fixed inset-y-0 right-0 z-50 flex w-full max-w-xl translate-x-full flex-col border-l border-slate-200 bg-white shadow-2xl transition-transform dark:border-ink-700 dark:bg-ink-900" aria-labelledby="drawer-title" role="dialog" aria-modal="true">
+  <div class="flex items-start gap-3 border-b border-slate-200 p-5 dark:border-ink-700">
+    <div class="min-w-0 flex-1">
+      <h2 id="drawer-title" class="break-words font-semibold text-slate-900 dark:text-white"></h2>
+      <div id="drawer-status" class="mt-1"></div>
+    </div>
+    <button class="icon-btn" id="drawer-close" aria-label="Close details"><i data-icon="X"></i></button>
+  </div>
+  <div class="flex-1 space-y-5 overflow-y-auto p-5">
+    <dl id="drawer-info" class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm"></dl>
+    <div>
+      <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <h3 class="text-sm font-semibold">Files</h3>
+        <div class="flex flex-wrap gap-1">
+          <button class="btn-ghost !px-2 !py-1 text-xs" id="drawer-select-all">All</button>
+          <button class="btn-ghost !px-2 !py-1 text-xs" id="drawer-select-none">None</button>
+          <button class="btn-outline !px-2 !py-1 text-xs" id="drawer-apply-files" disabled>Apply selection</button>
+        </div>
+      </div>
+      <ul id="drawer-files" class="max-h-96 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200 text-sm dark:divide-ink-800 dark:border-ink-700"></ul>
+      <p id="drawer-save-hint" class="mt-2 text-xs text-slate-500"></p>
+    </div>
+  </div>
+  <div class="flex flex-wrap gap-2 border-t border-slate-200 p-4 dark:border-ink-700">
+    <button class="btn-primary" id="drawer-save-all" disabled><i data-icon="FolderDown"></i>Save all to folder…</button>
+    <button class="btn-ghost ml-auto text-rose-600 dark:text-rose-400" id="drawer-remove"><i data-icon="Trash2"></i>Remove…</button>
+  </div>
+</aside>
+
+<!-- Add torrent modal -->
+<div id="add-modal" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:items-center" hidden role="dialog" aria-modal="true" aria-labelledby="add-title">
+  <div class="card w-full max-w-2xl animate-fade-in">
+    <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-ink-700">
+      <h2 id="add-title" class="font-semibold">Add torrent</h2>
+      <button class="icon-btn" id="add-close" aria-label="Close"><i data-icon="X"></i></button>
+    </div>
+
+    <div id="add-step-pick" class="p-5">
+      <div class="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1 text-sm dark:bg-ink-850" role="tablist">
+        <button class="tab flex-1 rounded-md px-3 py-1.5 font-medium" role="tab" data-tab="file" aria-selected="true">Torrent file</button>
+        <button class="tab flex-1 rounded-md px-3 py-1.5 font-medium" role="tab" data-tab="magnet" aria-selected="false">Magnet link</button>
+      </div>
+      <div data-panel="file">
+        <label id="dropzone" for="file-input" class="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 px-6 py-12 text-center transition-colors hover:border-sky-500 hover:bg-sky-500/5 dark:border-ink-700">
+          <i data-icon="FileUp" class="xl text-sky-500"></i>
+          <span class="text-sm font-medium">Drop a .torrent file here or <span class="text-sky-600 underline dark:text-sky-400">browse</span></span>
+          <span class="text-xs text-slate-500">Read locally, never uploaded. Max 10 MB. Nothing downloads until you confirm.</span>
+        </label>
+        <input id="file-input" type="file" accept=".torrent,application/x-bittorrent" class="sr-only">
+      </div>
+      <form data-panel="magnet" id="magnet-form" hidden novalidate>
+        <label class="label" for="magnet-input">Magnet link</label>
+        <textarea id="magnet-input" class="input min-h-[96px] font-mono text-xs" placeholder="magnet:?xt=urn:btih:…" spellcheck="false" autocomplete="off"></textarea>
+        <p class="mt-1 text-xs text-slate-500">The file list is fetched from peers first. No file data is downloaded until you confirm.</p>
+        <div class="mt-3 flex justify-end"><button type="submit" class="btn-primary" id="magnet-submit"><i data-icon="Search"></i>Get file list</button></div>
+      </form>
+      <div id="upload-loading" class="mt-4 flex items-center gap-2 text-sm text-slate-500" hidden><i data-icon="LoaderCircle" class="animate-spin"></i><span>Reading torrent…</span></div>
+      <div id="upload-error" class="mt-4 flex items-start gap-2 rounded-lg bg-rose-500/10 p-3 text-sm text-rose-600 dark:text-rose-300" role="alert" hidden></div>
+    </div>
+
+    <div id="add-step-wait" class="space-y-3 p-5" hidden>
+      <div class="flex items-center gap-2 text-sm"><i data-icon="LoaderCircle" class="animate-spin text-sky-500"></i><span>Fetching the file list from peers…</span></div>
+      <div class="break-all font-mono text-xs text-slate-500" id="wait-hash"></div>
+      <p id="wait-hint" class="text-xs text-amber-600 dark:text-amber-400"></p>
+      <div class="flex justify-end"><button class="btn-ghost" id="wait-cancel" type="button">Cancel</button></div>
+    </div>
+
+    <div id="add-step-preview" class="space-y-4 p-5" hidden>
+      <div>
+        <div class="text-xs uppercase tracking-wide text-slate-500">Torrent</div>
+        <div id="pv-name" class="break-words text-base font-semibold text-slate-900 dark:text-white"></div>
+      </div>
+      <dl class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+        <div><dt class="stat-k">Total size</dt><dd class="stat-v" id="pv-size"></dd></div>
+        <div><dt class="stat-k">Files</dt><dd class="stat-v" id="pv-files"></dd></div>
+        <div><dt class="stat-k">Pieces</dt><dd class="stat-v" id="pv-pieces"></dd></div>
+        <div><dt class="stat-k">Private</dt><dd class="stat-v" id="pv-private"></dd></div>
+        <div class="col-span-2 sm:col-span-4"><dt class="stat-k">Info hash</dt><dd class="stat-v break-all font-mono text-xs" id="pv-hash"></dd></div>
+        <div class="col-span-2 sm:col-span-4"><dt class="stat-k">Trackers</dt><dd class="whitespace-pre-line break-all font-mono text-xs text-slate-500" id="pv-trackers"></dd></div>
+      </dl>
+      <div id="pv-warnings" class="space-y-1 text-xs text-amber-700 dark:text-amber-300"></div>
+      <fieldset>
+        <legend class="label">Save to</legend>
+        <div class="grid gap-2 sm:grid-cols-2">
+          <label class="flex items-start gap-2 rounded-lg border border-slate-200 p-3 text-sm dark:border-ink-700"><input type="radio" name="pv-dest" value="browser" class="mt-0.5 accent-sky-600" checked><span><span class="font-medium">Browser storage</span><br><span class="text-xs text-slate-500">Save files to your device when finished. <span id="pv-storage"></span></span></span></label>
+          <label class="flex items-start gap-2 rounded-lg border border-slate-200 p-3 text-sm dark:border-ink-700" id="pv-folder-option"><input type="radio" name="pv-dest" value="folder" class="mt-0.5 accent-sky-600" id="pv-dest-folder"><span><span class="font-medium">Folder on this device</span><br><span class="text-xs text-slate-500" id="pv-folder-text">Writes straight to disk (Chrome/Edge).</span></span></label>
+        </div>
+        <div class="mt-2 flex items-center gap-2" id="pv-folder-row" hidden>
+          <button type="button" class="btn-outline" id="pv-pick-folder"><i data-icon="FolderOpen"></i>Choose folder…</button>
+          <span class="truncate font-mono text-xs text-slate-500" id="pv-folder-name">No folder chosen</span>
+        </div>
+      </fieldset>
+      <div>
+        <div class="mb-2 flex items-center justify-between">
+          <span class="text-sm font-semibold">Files <span id="pv-selected" class="ml-1 font-normal text-slate-500"></span></span>
+          <div class="flex gap-1">
+            <button class="btn-ghost !px-2 !py-1 text-xs" id="pv-all" type="button">Select all</button>
+            <button class="btn-ghost !px-2 !py-1 text-xs" id="pv-none" type="button">Select none</button>
+          </div>
+        </div>
+        <ul id="pv-file-list" class="max-h-64 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200 text-sm dark:divide-ink-800 dark:border-ink-700"></ul>
+        <p class="mt-2 text-xs text-slate-500">Pieces can span file boundaries, so a little data from skipped neighbouring files may also be downloaded.</p>
+      </div>
+      <div id="confirm-error" class="flex items-start gap-2 rounded-lg bg-rose-500/10 p-3 text-sm text-rose-600 dark:text-rose-300" role="alert" hidden></div>
+      <div class="flex justify-end gap-2 border-t border-slate-200 pt-4 dark:border-ink-700">
+        <button class="btn-ghost" id="pv-cancel" type="button">Cancel</button>
+        <button class="btn-primary" id="pv-confirm" type="button"><i data-icon="Download"></i>Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Remove dialog -->
+<div id="remove-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" hidden role="alertdialog" aria-modal="true" aria-labelledby="remove-title">
+  <div class="card w-full max-w-md animate-fade-in p-5">
+    <h2 id="remove-title" class="mb-1 font-semibold">Remove download</h2>
+    <p class="mb-3 break-words text-sm text-slate-500" id="remove-name"></p>
+    <p class="mb-3 text-sm" id="remove-explain"></p>
+    <label class="mb-3 flex items-start gap-2 rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 text-sm" id="remove-confirm-row" hidden><input type="checkbox" id="remove-confirm-check" class="mt-0.5 accent-rose-600"><span id="remove-confirm-text"></span></label>
+    <div class="flex justify-end gap-2">
+      <button class="btn-ghost" id="remove-cancel">Cancel</button>
+      <button class="btn-danger" id="remove-ok"><i data-icon="Trash2"></i>Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- Another tab already runs the app -->
+<div id="instance-overlay" class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-100/95 p-6 dark:bg-ink-950/95" hidden>
+  <div class="card max-w-md p-6 text-center">
+    <i data-icon="AppWindow" class="xl mx-auto mb-3 text-sky-500"></i>
+    <h2 class="mb-2 font-semibold">Already open in another tab</h2>
+    <p class="text-sm text-slate-500">To avoid two tabs writing to the same browser storage, the downloader runs in one tab at a time. Close the other tab, then reload this one.</p>
+  </div>
+</div>
+
+<div id="drag-overlay" class="pointer-events-none fixed inset-0 z-[70] flex items-center justify-center bg-sky-600/20 backdrop-blur-sm" hidden>
+  <div class="rounded-2xl border-2 border-dashed border-sky-400 bg-white/90 px-10 py-8 text-center text-lg font-semibold text-sky-700 dark:bg-ink-900/90 dark:text-sky-300">Drop .torrent file to add</div>
+</div>
+
+<div id="toasts" class="fixed bottom-14 right-4 z-[80] flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2" aria-live="assertive"></div>
+</body>
+</html>

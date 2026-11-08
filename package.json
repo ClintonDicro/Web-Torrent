@@ -1,0 +1,36 @@
+{
+  "name": "browser-torrent-downloader",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Browser-only torrent downloader (WebTorrent over WebRTC) for static hosting on Cloudflare Pages.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/check-dist.mjs",
+    "preview": "vite preview --port 4173 --strictPort",
+    "pages:dev": "wrangler pages dev dist --port 8788",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "deploy": "wrangler pages deploy dist --project-name browser-torrent-downloader",
+    "serve:dist": "node scripts/serve-dist.mjs 4174"
+  },
+  "dependencies": {
+    "fsa-chunk-store": "1.3.0",
+    "lucide": "0.468.0",
+    "parse-torrent": "11.0.24",
+    "path-browserify": "1.0.1",
+    "webtorrent": "3.0.21"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "autoprefixer": "10.4.20",
+    "bittorrent-tracker": "11.2.3",
+    "jsdom": "26.1.0",
+    "postcss": "8.5.30",
+    "selfsigned": "5.5.0",
+    "tailwindcss": "3.4.17",
+    "vite": "8.3.6",
+    "vitest": "4.1.12",
+    "wrangler": "3.114.17"
+  }
+}

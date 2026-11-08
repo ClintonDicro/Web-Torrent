@@ -1,0 +1,9 @@
+
+ RUN  v4.1.12 D:/My Folder/Torrent Download/web
+
+
+ Test Files  3 passed (3)
+      Tests  67 passed (67)
+   Start at  15:54:36
+   Duration  552ms (transform 122ms, setup 0ms, import 316ms, tests 64ms, environment 0ms)
+

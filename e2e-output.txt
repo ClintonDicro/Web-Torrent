@@ -1,0 +1,66 @@
+
+Running 60 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\app.spec.js:22:3 › Browser torrent downloader › loads under the production CSP with security headers and no errors (6.6s)
+  ok  2 [chromium] › tests\e2e\app.spec.js:38:3 › Browser torrent downloader › magnet link: preview, file selection, live progress, completion and save (11.1s)
+  ok  3 [chromium] › tests\e2e\app.spec.js:79:3 › Browser torrent downloader › .torrent upload: preview, download and save multi-file content (6.4s)
+  ok  4 [chromium] › tests\e2e\app.spec.js:107:3 › Browser torrent downloader › pause stops progress and resume completes the download (11.3s)
+  ok  5 [chromium] › tests\e2e\app.spec.js:131:3 › Browser torrent downloader › errors: invalid magnet, invalid torrent, no peers, unreachable tracker, offline (21.1s)
+  ok  6 [chromium] › tests\e2e\app.spec.js:167:3 › Browser torrent downloader › untrusted names are shown as text, never as HTML (5.4s)
+  ok  7 [chromium] › tests\e2e\app.spec.js:187:3 › Browser torrent downloader › per-session limit and removing a download frees browser storage (6.7s)
+  ok  8 [chromium] › tests\e2e\app.spec.js:212:3 › Browser torrent downloader › queue: only the configured number of downloads run at once (11.0s)
+  ok  9 [chromium] › tests\e2e\app.spec.js:235:3 › Browser torrent downloader › settings are validated and persisted (4.7s)
+  ok 10 [chromium] › tests\e2e\app.spec.js:253:3 › Browser torrent downloader › only one app tab can run at a time (6.0s)
+  ok 11 [chromium] › tests\e2e\app.spec.js:262:3 › Browser torrent downloader › responsive layout on a phone-sized screen (4.9s)
+  ok 12 [chromium] › tests\e2e\app.spec.js:276:3 › Browser torrent downloader › folder destination writes straight to the chosen folder (Chromium) (7.8s)
+  ok 13 [chromium] › tests\e2e\app.spec.js:321:3 › Browser torrent downloader › Chrome/Edge save paths: "Save as" stream and "Save all to folder" (6.2s)
+  ok 14 [chromium] › tests\e2e\app.spec.js:358:3 › Browser torrent downloader › cross-browser: a different browser engine seeds, this one downloads (14.2s)
+  -  15 [chromium] › tests\e2e\public.spec.js:21:3 › public WebRTC swarm (opt-in) › downloads Sintel poster and subtitles from WebRTC peers only
+  ok 16 [chrome] › tests\e2e\app.spec.js:22:3 › Browser torrent downloader › loads under the production CSP with security headers and no errors (2.1s)
+  ok 17 [chrome] › tests\e2e\app.spec.js:38:3 › Browser torrent downloader › magnet link: preview, file selection, live progress, completion and save (9.1s)
+  ok 18 [chrome] › tests\e2e\app.spec.js:79:3 › Browser torrent downloader › .torrent upload: preview, download and save multi-file content (5.7s)
+  ok 19 [chrome] › tests\e2e\app.spec.js:107:3 › Browser torrent downloader › pause stops progress and resume completes the download (9.9s)
+  ok 20 [chrome] › tests\e2e\app.spec.js:131:3 › Browser torrent downloader › errors: invalid magnet, invalid torrent, no peers, unreachable tracker, offline (19.0s)
+  ok 21 [chrome] › tests\e2e\app.spec.js:167:3 › Browser torrent downloader › untrusted names are shown as text, never as HTML (2.7s)
+  ok 22 [chrome] › tests\e2e\app.spec.js:187:3 › Browser torrent downloader › per-session limit and removing a download frees browser storage (3.9s)
+  ok 23 [chrome] › tests\e2e\app.spec.js:212:3 › Browser torrent downloader › queue: only the configured number of downloads run at once (8.1s)
+  ok 24 [chrome] › tests\e2e\app.spec.js:235:3 › Browser torrent downloader › settings are validated and persisted (2.3s)
+  ok 25 [chrome] › tests\e2e\app.spec.js:253:3 › Browser torrent downloader › only one app tab can run at a time (1.8s)
+  ok 26 [chrome] › tests\e2e\app.spec.js:262:3 › Browser torrent downloader › responsive layout on a phone-sized screen (2.2s)
+  ok 27 [chrome] › tests\e2e\app.spec.js:276:3 › Browser torrent downloader › folder destination writes straight to the chosen folder (Chromium) (5.4s)
+  ok 28 [chrome] › tests\e2e\app.spec.js:321:3 › Browser torrent downloader › Chrome/Edge save paths: "Save as" stream and "Save all to folder" (4.7s)
+  -  29 [chrome] › tests\e2e\app.spec.js:358:3 › Browser torrent downloader › cross-browser: a different browser engine seeds, this one downloads
+  -  30 [chrome] › tests\e2e\public.spec.js:21:3 › public WebRTC swarm (opt-in) › downloads Sintel poster and subtitles from WebRTC peers only
+  ok 31 [msedge] › tests\e2e\app.spec.js:22:3 › Browser torrent downloader › loads under the production CSP with security headers and no errors (3.2s)
+  ok 32 [msedge] › tests\e2e\app.spec.js:38:3 › Browser torrent downloader › magnet link: preview, file selection, live progress, completion and save (8.3s)
+  ok 33 [msedge] › tests\e2e\app.spec.js:79:3 › Browser torrent downloader › .torrent upload: preview, download and save multi-file content (4.2s)
+  ok 34 [msedge] › tests\e2e\app.spec.js:107:3 › Browser torrent downloader › pause stops progress and resume completes the download (9.9s)
+  ok 35 [msedge] › tests\e2e\app.spec.js:131:3 › Browser torrent downloader › errors: invalid magnet, invalid torrent, no peers, unreachable tracker, offline (17.9s)
+  ok 36 [msedge] › tests\e2e\app.spec.js:167:3 › Browser torrent downloader › untrusted names are shown as text, never as HTML (2.6s)
+  ok 37 [msedge] › tests\e2e\app.spec.js:187:3 › Browser torrent downloader › per-session limit and removing a download frees browser storage (4.0s)
+  ok 38 [msedge] › tests\e2e\app.spec.js:212:3 › Browser torrent downloader › queue: only the configured number of downloads run at once (9.3s)
+  ok 39 [msedge] › tests\e2e\app.spec.js:235:3 › Browser torrent downloader › settings are validated and persisted (2.3s)
+  ok 40 [msedge] › tests\e2e\app.spec.js:253:3 › Browser torrent downloader › only one app tab can run at a time (1.7s)
+  ok 41 [msedge] › tests\e2e\app.spec.js:262:3 › Browser torrent downloader › responsive layout on a phone-sized screen (1.9s)
+  ok 42 [msedge] › tests\e2e\app.spec.js:276:3 › Browser torrent downloader › folder destination writes straight to the chosen folder (Chromium) (4.9s)
+  ok 43 [msedge] › tests\e2e\app.spec.js:321:3 › Browser torrent downloader › Chrome/Edge save paths: "Save as" stream and "Save all to folder" (5.1s)
+  -  44 [msedge] › tests\e2e\app.spec.js:358:3 › Browser torrent downloader › cross-browser: a different browser engine seeds, this one downloads
+  -  45 [msedge] › tests\e2e\public.spec.js:21:3 › public WebRTC swarm (opt-in) › downloads Sintel poster and subtitles from WebRTC peers only
+  ok 46 [firefox] › tests\e2e\app.spec.js:22:3 › Browser torrent downloader › loads under the production CSP with security headers and no errors (5.1s)
+  ok 47 [firefox] › tests\e2e\app.spec.js:38:3 › Browser torrent downloader › magnet link: preview, file selection, live progress, completion and save (11.4s)
+  ok 48 [firefox] › tests\e2e\app.spec.js:79:3 › Browser torrent downloader › .torrent upload: preview, download and save multi-file content (6.0s)
+  ok 49 [firefox] › tests\e2e\app.spec.js:107:3 › Browser torrent downloader › pause stops progress and resume completes the download (14.8s)
+  ok 50 [firefox] › tests\e2e\app.spec.js:131:3 › Browser torrent downloader › errors: invalid magnet, invalid torrent, no peers, unreachable tracker, offline (20.4s)
+  ok 51 [firefox] › tests\e2e\app.spec.js:167:3 › Browser torrent downloader › untrusted names are shown as text, never as HTML (2.4s)
+  ok 52 [firefox] › tests\e2e\app.spec.js:187:3 › Browser torrent downloader › per-session limit and removing a download frees browser storage (5.7s)
+  ok 53 [firefox] › tests\e2e\app.spec.js:212:3 › Browser torrent downloader › queue: only the configured number of downloads run at once (14.1s)
+  ok 54 [firefox] › tests\e2e\app.spec.js:235:3 › Browser torrent downloader › settings are validated and persisted (2.7s)
+  ok 55 [firefox] › tests\e2e\app.spec.js:253:3 › Browser torrent downloader › only one app tab can run at a time (3.2s)
+  ok 56 [firefox] › tests\e2e\app.spec.js:262:3 › Browser torrent downloader › responsive layout on a phone-sized screen (2.8s)
+  -  57 [firefox] › tests\e2e\app.spec.js:276:3 › Browser torrent downloader › folder destination writes straight to the chosen folder (Chromium)
+  -  58 [firefox] › tests\e2e\app.spec.js:321:3 › Browser torrent downloader › Chrome/Edge save paths: "Save as" stream and "Save all to folder"
+  ok 59 [firefox] › tests\e2e\app.spec.js:358:3 › Browser torrent downloader › cross-browser: a different browser engine seeds, this one downloads (9.5s)
+  -  60 [firefox] › tests\e2e\public.spec.js:21:3 › public WebRTC swarm (opt-in) › downloads Sintel poster and subtitles from WebRTC peers only
+
+  8 skipped
+  52 passed (6.5m)
