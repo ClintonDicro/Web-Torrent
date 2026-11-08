@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply bg-slate-100 text-slate-800 dark:bg-ink-950 dark:text-slate-200; }
+  :focus-visible { @apply outline-none ring-2 ring-sky-500 ring-offset-2 ring-offset-white dark:ring-offset-ink-950; }
+  ::selection { @apply bg-sky-500/30; }
+}
+
+@layer components {
+  .btn { @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-sky-600 text-white hover:bg-sky-500 active:bg-sky-700; }
+  .btn-ghost { @apply btn text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-ink-700; }
+  .btn-outline { @apply btn border border-slate-300 text-slate-700 hover:bg-slate-200 dark:border-ink-700 dark:text-slate-200 dark:hover:bg-ink-800; }
+  .btn-danger { @apply btn bg-rose-600 text-white hover:bg-rose-500; }
+  .icon-btn { @apply inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-ink-700 dark:hover:text-white disabled:opacity-40; }
+  .card { @apply rounded-xl border border-slate-200 bg-white shadow-sm dark:border-ink-700/70 dark:bg-ink-900; }
+  .input { @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30 dark:border-ink-700 dark:bg-ink-850 dark:text-slate-100; }
+  .label { @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400; }
+  .nav-item { @apply flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-ink-800 dark:hover:text-white; }
+  .nav-item[aria-current="page"] { @apply bg-sky-600/10 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300; }
+  .chip { @apply inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium tabular-nums dark:border-ink-700 dark:bg-ink-900; }
+  .badge { @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide; }
+  .bar { @apply h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-ink-700; }
+  .bar-fill { @apply h-full rounded-full transition-[width] duration-700 ease-out; }
+  .bar-live { background-image: linear-gradient(45deg, rgba(255,255,255,.18) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.18) 50%, rgba(255,255,255,.18) 75%, transparent 75%, transparent); background-size: 1rem 1rem; @apply animate-stripes; }
+  .stat-k { @apply text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-500; }
+  .stat-v { @apply text-sm font-medium tabular-nums text-slate-800 dark:text-slate-200; }
+}
+
+.lucide { width: 1rem; height: 1rem; stroke-width: 2; flex-shrink: 0; }
+.lucide.lg { width: 1.25rem; height: 1.25rem; }
+.lucide.xl { width: 2.5rem; height: 2.5rem; stroke-width: 1.5; }
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { .bar-fill, .bar-live { transition: none; animation: none; } }
+
+.tab { @apply text-slate-500 transition-colors; }
+.tab[aria-selected="true"] { @apply bg-white text-slate-900 shadow-sm dark:bg-ink-700 dark:text-white; }
