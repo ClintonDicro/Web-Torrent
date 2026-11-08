@@ -1,0 +1,25 @@
+# Cloudflare Pages response headers (https://developers.cloudflare.com/pages/configuration/headers/)
+#
+# CSP notes:
+#  - script-src 'self': no inline scripts, no eval, no third-party scripts.
+#  - connect-src wss: is required for WebTorrent WebSocket trackers (any host, chosen by the
+#    user or the torrent). https: is required for BitTorrent web seeds (BEP 19). WebRTC peer
+#    connections themselves are not governed by CSP.
+#  - worker-src 'self': the download service worker (/download-sw.js).
+#  - frame-src 'self': saving streams through a hidden same-origin iframe that the service
+#    worker answers with an attachment (never rendered).
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' wss: https:; worker-src 'self'; manifest-src 'self'; media-src 'none'; object-src 'none'; frame-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), hid=(), midi=(), browsing-topics=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/download-sw.js
+  Cache-Control: no-cache
