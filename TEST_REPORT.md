@@ -8,9 +8,9 @@
 
 | Suite | Command | Result |
 |---|---|---|
-| Unit (Vitest) | `npm test` | **67 passed** |
+| Unit (Vitest) | `npm test` | **76 passed** |
 | Production build + dist check | `npm run build` | **Passed**: 8 files, ~370 KiB, all limits met |
-| End-to-end, 4 browsers, local WebRTC swarm | `npm run test:e2e` | **52 passed, 0 failed, 8 skipped (intentional)** |
+| End-to-end, 4 browsers, local WebRTC swarm | `npm run test:e2e` | **56 passed, 0 failed, 8 skipped (intentional)** |
 | Public WebRTC torrent (Sintel, opt-in) | `PUBLIC_TORRENT_TEST=1 npx playwright test tests/e2e/public.spec.js` | **4 passed** (Chromium, Chrome, Edge, Firefox) |
 | Same E2E tests against Cloudflare's Pages emulator (`wrangler pages dev dist`) | `npx playwright test -c playwright.pages.config.js` | **8 passed** (Chromium + Firefox: CSP, magnet flow, pause/resume, untrusted names) |
 
@@ -47,7 +47,7 @@ webtorrent.io.
 | 6 | Name, file list, progress %, speed, peers, downloaded bytes, status | **Pass** | Preview + card assertions; live progress seen with ≥3 distinct values |
 | 7 | Select files; save completed files to device | **Pass** | Selection E2E (unselected file not completed); saves via service worker (4 browsers), "Save as" stream and "Save all to folder" (Chromium/Chrome/Edge, OPFS stand-in for the native dialog), folder destination |
 | 8 | Safe errors: invalid torrents, unavailable trackers, no WebRTC peers, network failures | **Pass** | E2E "errors…" (invalid magnet/torrent/extension, unreachable `wss://127.0.0.1:9` logged, "No WebRTC peers" hint, offline banner); unit tests |
-| 9 | Explain no TCP/uTP peers | Done | In-app notice + "How it works & limits" page + README |
+| 9 | Explain no TCP/uTP peers | Done | "How it works & limits" page, preview warning for UDP/HTTP-only torrents, card explanation when no peers are found, README (the always-visible dashboard banner was removed on request) |
 | 10 | No backend / worker / paid hosting / server storage | Done | Static `dist/` only |
 | 11 | Avoid loading whole files into memory | **Pass** | Service-worker streaming and File System Access streaming tested; Blob fallback only without service workers, capped at 512 MB. WebTorrent stores data in OPFS, not RAM |
 | 12 | Per-session limits; cleanup of unused resources | **Pass** | Unit (5 limit types); E2E session cap, queue limit, storage freed on remove; leftover storage purged at start; preview expiry; auto-cleanup |
@@ -56,7 +56,7 @@ webtorrent.io.
 | 15 | No API keys / credentials / private config | Done | None exist; `check-dist` scans the build |
 | 16 | Document browser restrictions, WebRTC compatibility, IP exposure, background limits | Done | README, SECURITY.md, in-app pages |
 | 17 | Responsive desktop + mobile | **Pass** | 390 px test: no horizontal scroll, collapsible sidebar |
-| 18 | Tests for magnet validation, uploads, progress, completion, errors | **Pass** | 67 unit + 52 E2E |
+| 18 | Tests for magnet validation, uploads, progress, completion, errors | **Pass** | 76 unit + 56 E2E |
 | 19 | Legal WebRTC-seeded torrent in Chrome, Edge, Firefox | **Pass** | Sintel, 4/4 browsers, WebRTC only |
 | 20 | `npm run build` | **Pass** | |
 | 21 | `dist` deployable via Direct Upload | **Pass (emulated)** | `check-dist` (file count/size limits, required files); served by `wrangler pages dev` with headers applied. **Actual upload NOT TESTED** (needs your Cloudflare account) |
@@ -81,6 +81,13 @@ webtorrent.io.
    Store cleanup is now decided per torrent.
 7. A failed magnet cleared the pasted link; it is now kept.
 8. Dev-dependency advisories (PostCSS, Vitest/tinypool) fixed by upgrading.
+
+## Follow-up fixes (2026-11-09, after user report)
+
+- **Dead default tracker removed.** `wss://tracker.btorrent.xyz` no longer exists (its DNS points to 127.0.0.1), which caused the "1 tracker(s) unreachable" line. Defaults are now tracker.webtorrent.dev, tracker.openwebtorrent.com, tracker.files.fm and tracker.novage.com.ua (all checked reachable). Saved settings from the previous version are cleaned automatically.
+- **Clearer reason when nothing downloads.** A torrent that lists only UDP/HTTP trackers is shared by desktop clients a browser cannot reach. The preview now says so, and after 15 s the card explains it instead of blaming a tracker. Tracker problems are shown only when *every* WebSocket tracker fails; single failures go to the Activity Log.
+- **Dashboard banner removed.** The information lives on the "How it works & limits" page.
+- Tests: 9 new unit tests (`tests/unit/peers.test.js`) and a 4-browser regression test (`tests/e2e/desktop-only.spec.js`).
 
 ## NOT TESTED / limitations
 

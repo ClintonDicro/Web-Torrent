@@ -10,7 +10,7 @@
 
 import { parseTorrentFile, stripWebSeeds, summarizeLiveTorrent } from './lib/torrent-file.js'
 import { ValidationError, buildMagnet, cleanText, parseMagnet } from './lib/validate.js'
-import { STATUS_LABELS, computeStatus, isActive } from './lib/status.js'
+import { STATUS_LABELS, computeStatus, isActive, peerHint } from './lib/status.js'
 import { LimitError, checkNewDownload } from './lib/limits.js'
 import { effectiveTrackers } from './lib/settings.js'
 
@@ -164,7 +164,10 @@ export class TorrentEngine extends EventTarget {
     const bytes = new Uint8Array(await file.arrayBuffer())
     const meta = await parseTorrentFile(bytes, file.name)
     this._assertNotDuplicate(meta.infoHash)
-    const task = this._newTask('file', { infoHash: meta.infoHash, name: meta.name, meta, torrentBytes: bytes })
+    const task = this._newTask('file', {
+      infoHash: meta.infoHash, name: meta.name, meta, torrentBytes: bytes,
+      ownWssTrackers: meta.trackers.length, legacyTrackers: meta.unusableTrackers.length
+    })
     this.log('info', `Read torrent "${meta.name}" (${meta.files.length} file(s))`)
     this._emit()
     return task
@@ -179,7 +182,10 @@ export class TorrentEngine extends EventTarget {
     const m = parseMagnet(text)
     this._assertNotDuplicate(m.infoHash)
     const magnetURI = this.settings.allowWebSeeds ? m.magnetURI : buildMagnet({ ...m, webSeeds: [] })
-    const task = this._newTask('magnet', { infoHash: m.infoHash, name: m.name || m.infoHash, magnetURI })
+    const task = this._newTask('magnet', {
+      infoHash: m.infoHash, name: m.name || m.infoHash, magnetURI,
+      ownWssTrackers: m.trackers.length, legacyTrackers: m.unusableTrackers.length
+    })
     if (m.unusableTrackers.length) {
       this.log('warn', `Ignored ${m.unusableTrackers.length} tracker(s) a browser cannot use (only wss:// works).`)
     }
@@ -260,6 +266,7 @@ export class TorrentEngine extends EventTarget {
     task.queued = false
     task.paused = false
     task.lastProgressAt = Date.now()
+    task.searchStartedAt = Date.now()
     const needsReAdd = !task.torrent || task.destination === 'folder'
     if (needsReAdd) {
       // Re-create the torrent with its final storage location. For magnet links the
@@ -332,12 +339,10 @@ export class TorrentEngine extends EventTarget {
     })
     torrent.on('noPeers', source => {
       if (task.torrent !== torrent || task.error) return
-      if (torrent.numPeers === 0) {
-        task.hint = 'No WebRTC peers found yet. Only browser-based peers (WebTorrent) can connect. Torrents shared only by desktop clients are unreachable here.'
-      }
       this.log('info', `"${task.name}": no peers from ${cleanText(source, 30)}`)
     })
-    torrent.on('wire', () => { task.hint = null })
+    // A peer connected, so trackers evidently work: forget earlier tracker warnings.
+    torrent.on('wire', () => { task.trackerWarnings.clear() })
   }
 
   /**
@@ -636,10 +641,14 @@ export class TorrentEngine extends EventTarget {
         status,
         statusLabel: STATUS_LABELS[status],
         error: task.error,
-        hint: status === 'stalled' && !task.hint
-          ? 'No data received recently. Peers may have left, or none are reachable over WebRTC.'
-          : (['finding_peers', 'stalled', 'checking_metadata'].includes(status) ? task.hint : null),
-        trackerProblems: task.trackerWarnings.size,
+        hint: peerHint({
+          status,
+          numPeers,
+          secondsSearching: (now - (task.searchStartedAt || task.addedAt)) / 1000,
+          ownWssTrackers: task.ownWssTrackers || 0,
+          legacyTrackers: task.legacyTrackers || 0,
+          ...this._trackerHealth(task)
+        }),
         totalSize: task.meta?.length || 0,
         selectedBytes,
         downloaded,
@@ -678,6 +687,16 @@ export class TorrentEngine extends EventTarget {
         sessionBytes: this.sessionBytes
       }
     }
+  }
+
+  /** How many of the WebSocket trackers this torrent uses could not be reached. */
+  _trackerHealth (task) {
+    const t = task.torrent
+    if (!t || t.destroyed) return { trackersTotal: 0, trackersFailed: 0 }
+    const norm = u => String(u).replace(/\/+$/, '')
+    const inUse = [...new Set((t.announce || []).filter(u => /^wss:/.test(u)).map(norm))]
+    const failed = new Set([...task.trackerWarnings.keys()].map(norm))
+    return { trackersTotal: inUse.length, trackersFailed: inUse.filter(u => failed.has(u)).length }
   }
 
   files (id) {

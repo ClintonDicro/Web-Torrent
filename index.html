@@ -65,14 +65,6 @@
       <div id="banner-unsupported" class="flex items-start gap-2 rounded-lg border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-700 dark:text-rose-200" role="alert" hidden>
         <i data-icon="CircleAlert" class="mt-0.5"></i><span id="banner-unsupported-text"></span>
       </div>
-      <div id="banner-notice" class="flex items-start gap-3 rounded-lg border border-sky-500/30 bg-sky-500/5 p-3 text-sm" hidden>
-        <i data-icon="Info" class="mt-0.5 text-sky-500"></i>
-        <div class="flex-1 space-y-1 text-slate-600 dark:text-slate-300">
-          <p><strong class="text-slate-900 dark:text-white">Runs entirely in your browser.</strong> It can only connect to peers that support WebRTC (browser and WebTorrent-enabled clients), not to ordinary BitTorrent clients. Many torrents therefore have no reachable peers.</p>
-          <p>Peers and trackers can see your IP address. Keep this tab open: downloads stop when you close or reload it. Download only content you are allowed to.</p>
-        </div>
-        <button id="banner-notice-close" class="icon-btn" aria-label="Dismiss notice"><i data-icon="X"></i></button>
-      </div>
     </div>
 
     <main class="flex-1 overflow-y-auto px-4 py-5 md:px-6" id="main">
@@ -127,7 +119,7 @@
               <textarea class="input min-h-[96px] font-mono text-xs" id="s-trackers" name="trackers" spellcheck="false"></textarea>
               <p class="field-error mt-1 text-xs text-rose-500" data-for="trackers"></p>
             </div>
-            <label class="flex items-start gap-3 text-sm"><input type="checkbox" class="mt-0.5 h-4 w-4 accent-sky-600" name="useDefaultTrackers" id="s-useDefaultTrackers"><span><span class="font-medium">Add the public WebTorrent trackers</span><br><span class="text-xs text-slate-500">tracker.webtorrent.dev, tracker.openwebtorrent.com, tracker.btorrent.xyz (not added to private torrents).</span></span></label>
+            <label class="flex items-start gap-3 text-sm"><input type="checkbox" class="mt-0.5 h-4 w-4 accent-sky-600" name="useDefaultTrackers" id="s-useDefaultTrackers"><span><span class="font-medium">Add the public WebTorrent trackers</span><br><span class="text-xs text-slate-500">tracker.webtorrent.dev, tracker.openwebtorrent.com, tracker.files.fm, tracker.novage.com.ua (not added to private torrents).</span></span></label>
             <label class="flex items-start gap-3 text-sm"><input type="checkbox" class="mt-0.5 h-4 w-4 accent-sky-600" name="allowWebSeeds" id="s-allowWebSeeds"><span><span class="font-medium">Use HTTPS web seeds</span><br><span class="text-xs text-slate-500">Downloads from https:// servers listed in the torrent (only works if they allow cross-origin requests).</span></span></label>
             <label class="flex items-start gap-3 text-sm"><input type="checkbox" class="mt-0.5 h-4 w-4 accent-sky-600" name="seedAfterComplete" id="s-seedAfterComplete"><span><span class="font-medium">Seed after completion</span><br><span class="text-xs text-slate-500">Off: stops sharing as soon as a download finishes.</span></span></label>
           </div>

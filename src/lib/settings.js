@@ -1,11 +1,18 @@
 // Settings: defaults, validation and persistence in localStorage (this device only).
 import { parseTrackerList } from './validate.js'
 
+// Public WebTorrent (WebSocket) trackers. Checked reachable on 2026-11-09.
 export const DEFAULT_TRACKERS = [
   'wss://tracker.webtorrent.dev',
   'wss://tracker.openwebtorrent.com',
-  'wss://tracker.btorrent.xyz'
+  'wss://tracker.files.fm:7073/announce',
+  'wss://tracker.novage.com.ua'
 ]
+
+// Trackers that no longer exist. Removed from saved settings and never used.
+export const DEAD_TRACKERS = ['tracker.btorrent.xyz', 'tracker.fastcast.nz']
+const isDead = url => DEAD_TRACKERS.some(host => { try { return new URL(url).hostname === host } catch { return false } })
+const sameUrl = (a, b) => { try { return new URL(a).href === new URL(b).href } catch { return false } }
 
 export const DEFAULTS = Object.freeze({
   maxActive: 2,                 // downloads running at once; others wait in the queue
@@ -14,7 +21,7 @@ export const DEFAULTS = Object.freeze({
   sessionLimitGB: 10,           // total selected bytes per session
   downloadLimitKBps: 0,         // 0 = unlimited
   uploadLimitKBps: 0,
-  trackers: DEFAULT_TRACKERS.join('\n'),
+  trackers: '',                 // extra wss:// trackers chosen by the user
   useDefaultTrackers: true,     // add the WebSocket trackers above to every public torrent
   allowWebSeeds: true,          // https web seeds (server must send CORS headers)
   seedAfterComplete: false,
@@ -89,6 +96,10 @@ export function loadSettings (storage = globalThis.localStorage) {
     if (!(k in DEFAULTS)) continue
     try { out[k] = validateSettings({ [k]: v })[k] } catch { /* ignore bad stored value */ }
   }
+  // Older versions stored the default list in "trackers": drop defaults and dead trackers.
+  out.trackers = String(out.trackers).split('\n')
+    .filter(u => u && !isDead(u) && !DEFAULT_TRACKERS.some(d => sameUrl(d, u)))
+    .join('\n')
   return out
 }
 
@@ -100,5 +111,5 @@ export function saveSettings (values, storage = globalThis.localStorage) {
 export function effectiveTrackers (settings) {
   const { good } = parseTrackerList(settings.trackers)
   const all = settings.useDefaultTrackers ? [...good, ...DEFAULT_TRACKERS] : good
-  return [...new Set(all)]
+  return [...new Set(all)].filter(u => !isDead(u))
 }

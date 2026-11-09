@@ -249,7 +249,7 @@ function updateCard (el, t) {
   q('eta').textContent = LIVE.has(t.status) ? formatEta(t.eta) : '–'
   q('peers').textContent = `${t.numPeers} peer${t.numPeers === 1 ? '' : 's'}${t.webSeeds ? ` + ${t.webSeeds} web seed${t.webSeeds === 1 ? '' : 's'}` : ''}`
   const msg = q('msg')
-  const text = t.error ? `Error: ${t.error}` : (t.hint || (t.trackerProblems && ['finding_peers', 'stalled'].includes(t.status) ? `${t.trackerProblems} tracker(s) unreachable. See Activity Log.` : ''))
+  const text = t.error ? `Error: ${t.error}` : (t.hint || '')
   msg.hidden = !text
   msg.textContent = text
   msg.className = `mt-2 text-xs ${t.error ? 'text-rose-500' : 'text-amber-600 dark:text-amber-400'}`
@@ -452,7 +452,7 @@ function renderPreviewState () {
   if (!task.meta) {
     const waited = (Date.now() - task.addedAt) / 1000
     $('#wait-hint').textContent = waited > 15
-      ? `Still waiting after ${Math.round(waited)} s. ${task.hint || 'No WebRTC peers have answered yet. If this torrent is only shared by desktop clients, a browser cannot reach it.'}`
+      ? `Still waiting after ${Math.round(waited)} s. No WebRTC peers have answered yet. If this torrent is only shared by desktop BitTorrent clients, a browser cannot reach it.`
       : ''
     return
   }
@@ -477,7 +477,11 @@ function showPreview () {
   if (!m.private && state.settings.useDefaultTrackers) trackerLines.push('+ public WebTorrent trackers (see Settings)')
   $('#pv-trackers').textContent = trackerLines.length ? trackerLines.join('\n') : 'No WebSocket trackers'
   const warnings = []
-  if (m.unusableTrackers.length) warnings.push(`${m.unusableTrackers.length} tracker(s) use UDP/HTTP, which browsers cannot use. Peers are only found through WebSocket trackers.`)
+  if (task.ownWssTrackers === 0 && task.legacyTrackers > 0) {
+    warnings.push(`This torrent only lists UDP/HTTP trackers (${task.legacyTrackers}), which browsers cannot use. It is most likely shared only by desktop BitTorrent clients and may never find a peer here.`)
+  } else if (task.legacyTrackers > 0) {
+    warnings.push(`${task.legacyTrackers} of its trackers use UDP/HTTP, which browsers cannot use; its WebSocket trackers will be used.`)
+  }
   if (m.private) warnings.push('Private torrent: no extra trackers are added, and its own trackers are usually unreachable from a browser.')
   if (m.webSeeds.length) warnings.push(state.settings.allowWebSeeds ? `${m.webSeeds.length} HTTPS web seed(s) will be used if their servers allow cross-origin requests.` : 'Web seeds are turned off in Settings.')
   $('#pv-warnings').replaceChildren(...warnings.map(w => h('p', { class: 'flex items-start gap-1.5' }, icon('TriangleAlert', '!h-3.5 !w-3.5 mt-0.5 shrink-0'), h('span', { text: w }))))
@@ -717,10 +721,6 @@ function wire () {
   $('#history-clear').addEventListener('click', () => { clearHistory(); renderHistory(); toast('History cleared', 'info', 2500) })
   $('#logs-clear').addEventListener('click', () => { state.logs = []; renderLogs() })
 
-  let noticeClosed = false
-  try { noticeClosed = localStorage.getItem('btd.notice') === 'closed' } catch { /* ignore */ }
-  $('#banner-notice').hidden = noticeClosed
-  $('#banner-notice-close').addEventListener('click', () => { $('#banner-notice').hidden = true; try { localStorage.setItem('btd.notice', 'closed') } catch { /* ignore */ } })
   const onlineState = () => { $('#banner-offline').hidden = navigator.onLine; if (state.engine) scheduleRender() }
   window.addEventListener('online', () => { onlineState(); log('info', 'Back online') })
   window.addEventListener('offline', () => { onlineState(); log('warn', 'Network connection lost') })
